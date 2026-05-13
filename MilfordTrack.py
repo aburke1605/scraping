@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import smtplib
 from email.message import EmailMessage
 
@@ -90,3 +90,5 @@ if were_in_business:
         server.login(os.getenv("api_key"), os.getenv("secret_key"))
         server.send_message(msg)
         server.quit()
+else:
+    print(f"[{datetime.now(timezone(timedelta(hours=12)))}] no availability")
