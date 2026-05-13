@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 import smtplib
 from email.message import EmailMessage
 
+print(f"[{datetime.now(timezone(timedelta(hours=12)))}] STARTED SCRIPT")
+
 url = "https://prod-nz-rdr.recreation-management.tylerapp.com/nzrdr/rdr/search/greatwalkplacefacility"
 headers = {
     "accept": "application/json",
@@ -54,16 +56,15 @@ while date <= end_date:
 
     data = response.json()["GreatWalkFacilityData"]
     n_huts = len(data) # should be 3 (3 huts)
-    # available = True
     min_beds_available = 100 # arbitrary large number
     for i in range(n_huts):
         name = data[i]["FacilityName"]
         date_data = data[i]["GreatWalkFacilityDateData"][order[name]]
         beds_available = date_data["TotalAvailable"]
+        if beds_available > 0:
+            print(f"{i}:\n", date_data)
         min_beds_available = min(min_beds_available, beds_available)
-        # available &= beds_available > 0
 
-    # if available:
     if min_beds_available > 0:
         were_in_business = True
         body += f"{min_beds_available} beds from {arrivalDate}<br>"
@@ -91,4 +92,7 @@ if were_in_business:
         server.send_message(msg)
         server.quit()
 else:
-    print(f"[{datetime.now(timezone(timedelta(hours=12)))}] no availability")
+    print("no availability")
+
+print(f"[{datetime.now(timezone(timedelta(hours=12)))}] FINISHED SCRIPT")
+print("\n\n\n\n\n\n\n\n")
