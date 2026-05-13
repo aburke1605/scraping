@@ -57,15 +57,17 @@ while date <= end_date:
     data = response.json()["GreatWalkFacilityData"]
     n_huts = len(data) # should be 3 (3 huts)
     min_beds_available = 100 # arbitrary large number
+    is_available = True
     for i in range(n_huts):
         name = data[i]["FacilityName"]
         date_data = data[i]["GreatWalkFacilityDateData"][order[name]]
+        is_available &= date_data["IsAvailable"]
         beds_available = date_data["TotalAvailable"]
         if beds_available > 0:
             print(f"{i}:\n", date_data)
         min_beds_available = min(min_beds_available, beds_available)
 
-    if min_beds_available > 1:
+    if min_beds_available > 1 and is_available:
         were_in_business = True
         body += f"{min_beds_available} beds from {arrivalDate}<br>"
         body += "<a href=\"https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result\">https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result</a><br>"
