@@ -77,7 +77,7 @@ if were_in_business:
 
     msg = EmailMessage()
     msg["From"] = "aodhan-burke@hotmail.co.uk"
-    msg["To"] = ["aodhanburke@hotmail.com"]
+    msg["To"] = ["aodhanburke@hotmail.com", "jessicayukamccrory@gmail.com"]
     msg["Subject"] = "New Milford Track availability"
     msg.set_content("Your email client does not support HTML.")
     msg.add_alternative(body, subtype="html")
