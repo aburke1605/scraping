@@ -68,6 +68,7 @@ while date <= end_date:
     if min_beds_available > 1:
         were_in_business = True
         body += f"{min_beds_available} beds from {arrivalDate}<br>"
+        body += "<a href=\"https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result\">https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result</a><br>"
 
     date = date + timedelta(days=1)
 body += "</body></html>"
