@@ -83,7 +83,7 @@ if were_in_business:
     new_hash_key = hash_object.hexdigest()
     previous_hash_key = open(hash_key_file).readlines()[0]
     if new_hash_key == previous_hash_key:
-        print("same availability - skipping email")
+        print("SAME AVAILABILITY - SKIPPING EMAIL")
 
     else:
         with open(hash_key_file, "w") as f:
@@ -109,7 +109,7 @@ if were_in_business:
             server.quit()
 
 else:
-    print("no availability")
+    print("NO AVAILABILITY")
 
 print(f"[{datetime.now(timezone(timedelta(hours=12)))}] FINISHED SCRIPT")
 print("\n\n\n\n\n\n\n\n")
