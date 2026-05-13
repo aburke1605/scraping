@@ -4,6 +4,7 @@ load_dotenv()
 
 import requests
 from datetime import datetime, timedelta, timezone
+import hashlib
 import smtplib
 from email.message import EmailMessage
 
@@ -76,24 +77,37 @@ while date <= end_date:
 body += "</body></html>"
 
 if were_in_business:
-    smtp_server = "in-v3.mailjet.com"
-    port = 587
+    # don't repeatedly send emails
+    hash_key_file = "last_email_hash.txt"
+    hash_object = hashlib.sha256(body.encode("utf-8"))
+    new_hash_key = hash_object.hexdigest()
+    previous_hash_key = open(hash_key_file).readlines()[0]
+    if new_hash_key == previous_hash_key:
+        print("same availability - skipping email")
 
-    msg = EmailMessage()
-    msg["From"] = "aodhan-burke@hotmail.co.uk"
-    msg["To"] = ["aodhanburke@hotmail.com", "jessicayukamccrory@gmail.com"]
-    msg["Subject"] = "New Milford Track availability"
-    msg.set_content("Your email client does not support HTML.")
-    msg.add_alternative(body, subtype="html")
+    else:
+        with open(hash_key_file, "w") as f:
+            f.write(new_hash_key)
 
-    with smtplib.SMTP(smtp_server, port, timeout=10) as server:
-        server.set_debuglevel(1)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(os.getenv("api_key"), os.getenv("secret_key"))
-        server.send_message(msg)
-        server.quit()
+        smtp_server = "in-v3.mailjet.com"
+        port = 587
+
+        msg = EmailMessage()
+        msg["From"] = "aodhan-burke@hotmail.co.uk"
+        msg["To"] = ["aodhanburke@hotmail.com", "jessicayukamccrory@gmail.com"]
+        msg["Subject"] = "New Milford Track availability"
+        msg.set_content("Your email client does not support HTML.")
+        msg.add_alternative(body, subtype="html")
+
+        with smtplib.SMTP(smtp_server, port, timeout=10) as server:
+            server.set_debuglevel(1)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(os.getenv("api_key"), os.getenv("secret_key"))
+            server.send_message(msg)
+            server.quit()
+
 else:
     print("no availability")
 
