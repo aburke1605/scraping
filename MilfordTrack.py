@@ -65,7 +65,7 @@ while date <= end_date:
             print(f"{i}:\n", date_data)
         min_beds_available = min(min_beds_available, beds_available)
 
-    if min_beds_available > 0:
+    if min_beds_available > 1:
         were_in_business = True
         body += f"{min_beds_available} beds from {arrivalDate}<br>"
 
