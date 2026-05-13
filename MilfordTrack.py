@@ -65,7 +65,7 @@ while date <= end_date:
         is_available &= date_data["IsAvailable"]
         beds_available = date_data["TotalAvailable"]
         if beds_available > 0:
-            print(f"{i}:\n", date_data)
+            print(f"{name}:\n", date_data)
         min_beds_available = min(min_beds_available, beds_available)
 
     if min_beds_available > 1 and is_available:
