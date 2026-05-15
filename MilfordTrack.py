@@ -4,6 +4,7 @@ load_dotenv()
 
 import requests
 from datetime import datetime, timedelta, timezone
+import pathlib
 import hashlib
 import smtplib
 from email.message import EmailMessage
@@ -78,7 +79,8 @@ body += "</body></html>"
 
 if were_in_business:
     # don't repeatedly send emails
-    hash_key_file = "last_email_hash.txt"
+
+    hash_key_file = pathlib.Path(__file__).parent.as_posix() + "/last_email_hash.txt"
     hash_object = hashlib.sha256(body.encode("utf-8"))
     new_hash_key = hash_object.hexdigest()
     previous_hash_key = open(hash_key_file).readlines()[0]
