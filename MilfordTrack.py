@@ -81,6 +81,7 @@ if were_in_business:
     # don't repeatedly send emails
 
     hash_key_file = pathlib.Path(__file__).parent.as_posix() + "/last_email_hash.txt"
+    pathlib.Path(hash_key_file).touch(exist_ok=True)
     hash_object = hashlib.sha256(body.encode("utf-8"))
     new_hash_key = hash_object.hexdigest()
     previous_hash_key = open(hash_key_file).readlines()
