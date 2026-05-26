@@ -69,7 +69,7 @@ while date <= end_date:
             print(f"{name}:\n", date_data)
         min_beds_available = min(min_beds_available, beds_available)
 
-    if min_beds_available > 1 and is_available:
+    if min_beds_available >= 4 and is_available:
         were_in_business = True
         body += f"{min_beds_available} beds from {arrivalDate}<br>"
         body += "<a href=\"https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result\">https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result</a><br>"
