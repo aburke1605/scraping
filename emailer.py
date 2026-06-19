@@ -222,33 +222,35 @@ def scrape() -> tuple[bool, str]:
         return False, ""
 
 
-def init(_):
+def init(args):
     device_code = get_device_code()
     access_token, refresh_token = get_access_token(device_code=device_code)
-    write_tokens("tokens.txt", access_token, refresh_token)
+    token_file_name = args.token_file_name
+    write_tokens(token_file_name, access_token, refresh_token)
 
 
 def run(args):
-    previous_access_token, previous_refresh_token = read_tokens("tokens.txt")
+    print(f"[{datetime.now(timezone(timedelta(hours=12)))}] STARTED SCRIPT")
 
-    try:
-        send_email(
-            args.recipients,
-            args.subject,
-            args.body,
-            previous_access_token
-        )
-    except Exception:
-        access_token, refresh_token = refresh_access_token(refresh_token=previous_refresh_token)
-        
-        send_email(
-            args.recipients,
-            args.subject,
-            args.body,
-            access_token
-        )
+    token_file_name = args.token_file_name
+    recipients =      args.recipients
+    subject =         args.subject
+    body =            args.body
 
-        write_tokens("tokens.txt", access_token, refresh_token)
+    previous_access_token, previous_refresh_token = read_tokens(token_file_name)
+
+    subject = "New Milford Track availability"
+    send, body = scrape()
+    if send:
+        try:
+            send_email(recipients, subject, body, previous_access_token)
+        except Exception:
+            access_token, refresh_token = refresh_access_token(refresh_token=previous_refresh_token)
+            send_email(recipients, subject, body, access_token)
+            write_tokens(token_file_name, access_token, refresh_token)
+
+    print(f"[{datetime.now(timezone(timedelta(hours=12)))}] FINISHED SCRIPT")
+    print("\n\n\n\n\n\n\n\n")
 
 def emailer():
     parser = argparse.ArgumentParser()
