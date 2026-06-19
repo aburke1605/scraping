@@ -4,6 +4,8 @@ load_dotenv()
 
 import requests
 import pathlib
+import hashlib
+from datetime import datetime, timedelta, timezone
 import argparse
 
 
@@ -132,6 +134,92 @@ def send_email(to_addresses: list[str], subject: str, body: str, access_token: s
     response.raise_for_status()
 
 
+def scrape() -> tuple[bool, str]:
+    url = "https://prod-nz-rdr.recreation-management.tylerapp.com/nzrdr/rdr/search/greatwalkplacefacility"
+    headers = {
+        "accept": "application/json",
+        "accept-language": "en-US,en-GB;q=0.9,en;q=0.8",
+        "content-type": "application/json",
+        "origin": "https://bookings.doc.govt.nz",
+        "priority": "u=1, i",
+        "referer": "https://bookings.doc.govt.nz/",
+        "sec-ch-ua": '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "user-agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0"
+        ),
+    }
+    payload = {
+        "accomodation": "",
+        "placeId": 873,
+        "customerClassificationId": 1,
+        "nights": 2,
+    }
+
+    date = datetime(2026, 11, 1)
+    end_date = datetime(2027, 4, 28)
+
+    order = {
+        "Clinton Hut": 0,
+        "Mintaro Hut": 1,
+        "Dumpling Hut": 2,
+    }
+
+
+    body = "<html><body>Availabilities:<br>"
+    were_in_business = False
+    while date <= end_date:
+        arrivalDate = date.date().strftime("%Y-%m-%d")
+
+        payload["arrivalDate"] = arrivalDate
+        response = requests.post(url, headers=headers, json=payload)
+
+        data = response.json()["GreatWalkFacilityData"]
+        n_huts = len(data) # should be 3 (3 huts)
+        min_beds_available = 100 # arbitrary large number
+        is_available = True
+        for i in range(n_huts):
+            name = data[i]["FacilityName"]
+            date_data = data[i]["GreatWalkFacilityDateData"][order[name]]
+            is_available &= date_data["IsAvailable"]
+            beds_available = date_data["TotalAvailable"]
+            if beds_available > 0:
+                print(f"{name}:\n", date_data)
+            min_beds_available = min(min_beds_available, beds_available)
+
+        if min_beds_available >= 4 and is_available:
+            were_in_business = True
+            body += f"{min_beds_available} beds from {arrivalDate}<br>"
+            body += "<a href=\"https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result\">https://bookings.doc.govt.nz/Web/Default.aspx#!greatwalk-result</a><br>"
+
+        date = date + timedelta(days=1)
+    body += "</body></html>"
+
+    if were_in_business:
+        # don't repeatedly send emails
+        hash_key_file = pathlib.Path(__file__).parent.as_posix() + "/last_email_hash.txt"
+        pathlib.Path(hash_key_file).touch(exist_ok=True)
+        hash_object = hashlib.sha256(body.encode("utf-8"))
+        new_hash_key = hash_object.hexdigest()
+        previous_hash_key = open(hash_key_file).readlines()
+        if len(previous_hash_key) != 0 and new_hash_key == previous_hash_key[0]:
+            print("SAME AVAILABILITY - SKIPPING EMAIL")
+            return False, ""
+
+        else:
+            with open(hash_key_file, "w") as f:
+                f.write(new_hash_key)
+            return True, body
+
+    else:
+        print("NO AVAILABILITY")
+        return False, ""
 
 
 def init(_):
