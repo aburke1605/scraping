@@ -140,23 +140,23 @@ def init(_):
     write_tokens("tokens.txt", access_token, refresh_token)
 
 
-def run(_):
+def run(args):
     previous_access_token, previous_refresh_token = read_tokens("tokens.txt")
 
     try:
         send_email(
-            ["aodhan-burke@hotmail.co.uk"],
-            "subject",
-            "<html><body>b<br>o<br>d<br>y</body></html>",
+            args.recipients,
+            args.subject,
+            args.body,
             previous_access_token
         )
     except Exception:
         access_token, refresh_token = refresh_access_token(refresh_token=previous_refresh_token)
         
         send_email(
-            ["aodhan-burke@hotmail.co.uk"],
-            "subject",
-            "<html><body>b<br>o<br>d<br>y</body></html>",
+            args.recipients,
+            args.subject,
+            args.body,
             access_token
         )
 
@@ -174,6 +174,12 @@ if __name__ == "__main__":
     def add_subparser(name: str, func, **kwargs):
         p = subparsers.add_parser(name, **kwargs)
         p.set_defaults(func=func)
+        p.add_argument(
+            "--token-file-name",
+            type=str,
+            required=True,
+            help="name of file tokens will be stored in",
+        )
         return p
 
 
@@ -184,11 +190,30 @@ if __name__ == "__main__":
         description="get new device code to initialise email service",
     )
 
-    add_subparser(
+    run_parser = add_subparser(
         "run",
         run,
         help="run emailer after initialisation",
         description="run emailer after initialisation",
+    )
+    run_parser.add_argument(
+        "--subject",
+        type=str,
+        required=True,
+        help="email subject",
+    )
+    run_parser.add_argument(
+        "--body",
+        type=str,
+        required=True,
+        help="email body",
+    )
+    run_parser.add_argument(
+        "--recipients",
+        type=str,
+        nargs="+",
+        required=True,
+        help="recipient email address(es)",
     )
 
     args = parser.parse_args()
