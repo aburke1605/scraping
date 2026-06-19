@@ -6,7 +6,9 @@ import requests
 import pathlib
 import argparse
 
+
 client_id = os.getenv("client_id")
+
 
 def get_device_code() -> str:
     data = {
@@ -33,6 +35,7 @@ def get_device_code() -> str:
     
     return device_code
 
+
 def get_access_token(device_code: str) -> tuple[str, str]:
     data = {
         "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
@@ -52,6 +55,7 @@ def get_access_token(device_code: str) -> tuple[str, str]:
     refresh_token = response_data["refresh_token"]
 
     return access_token, refresh_token
+
 
 def refresh_access_token(refresh_token: str) -> tuple[str, str]:
     data = {
@@ -160,17 +164,18 @@ def run(_):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
         dest="command",
         required=True
     )
-    
+
+
     def add_subparser(name: str, func, **kwargs):
         p = subparsers.add_parser(name, **kwargs)
         p.set_defaults(func=func)
         return p
+
 
     add_subparser(
         "init",
@@ -187,5 +192,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
     args.func(args)
     
