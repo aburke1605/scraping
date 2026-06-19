@@ -162,8 +162,7 @@ def run(args):
 
         write_tokens("tokens.txt", access_token, refresh_token)
 
-
-if __name__ == "__main__":
+def emailer():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
         dest="command",
@@ -219,4 +218,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.func(args)
-    
+
+if __name__ == "__main__":
+    emailer()
